@@ -25,13 +25,13 @@ class CryptoPolling():
         self.exchanges.append({"exchange": ccxt.ascendex()})
         self.exchanges.append({"exchange": ccxt.bitmart()})
         # self.exchanges.append({"exchange": ccxt.bitvavo()})
-        # self.exchanges.append({"exchange": ccxt.currencycom()})
-        # self.exchanges.append({"exchange": ccxt.ftx()})
-        # self.exchanges.append({"exchange": ccxt.idex()})
-        # self.exchanges.append({"exchange": ccxt.mexc()})
-        # self.exchanges.append({"exchange": ccxt.okex()})
-        # self.exchanges.append({"exchange": ccxt.wavesexchange()})
-        # self.exchanges.append({"exchange": ccxt.zb()})
+        self.exchanges.append({"exchange": ccxt.currencycom()})
+        self.exchanges.append({"exchange": ccxt.ftx()})
+        self.exchanges.append({"exchange": ccxt.idex()})
+        self.exchanges.append({"exchange": ccxt.mexc()})
+        self.exchanges.append({"exchange": ccxt.okex()})
+        self.exchanges.append({"exchange": ccxt.wavesexchange()})
+        self.exchanges.append({"exchange": ccxt.zb()})
 
     def start(self):
         for e in self.exchanges:
