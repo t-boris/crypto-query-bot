@@ -71,14 +71,25 @@ class CryptoPolling():
                 queue.insert(0, pair)
             else:
                 if client.has['fetchOrderBook']:
-                    book = client.fetch_order_book(pair)
-                    if len(book['bids']) == 0 or len(book['asks']) == 0:
-                        queue.append(pair)
+                    try:
+                        book = client.fetch_order_book(pair)
+                        if len(book['bids']) == 0 or len(book['asks']) == 0:
+                            queue.append(pair)
+                            continue
+                        res = self.calculate_rate(pair, book)
+                    except Exception:
+                        queue.insert(0, pair)
+                        await asyncio.sleep(5000)
                         continue
-                    res = self.calculate_rate(pair, book)
                 else:
-                    t = client.fetch_ticker(pair)
-                    res = self.calculate_ticker(t)
+                    try:
+                        t = client.fetch_ticker(pair)
+                        res = self.calculate_ticker(t)
+                    except Exception:
+                        queue.insert(0, pair)
+                        await asyncio.sleep(5000)
+                        continue
+
                 self.store_result(name, pair, res, now)
                 exchange['updated'] = now
                 queue.append(pair)
