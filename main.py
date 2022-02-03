@@ -116,21 +116,25 @@ class CryptoPolling():
             loop.close()
 
     def store_result(self, exchange, pair, result, updated):
-        now = datetime.datetime.now()
-        doc = {
-            "timestamp": datetime.datetime.utcnow(),
-            "updated": updated,
-            "exchange": exchange,
-            "type": "data",
-            "pair": pair,
-            "ask.price": result['ask']['price'],
-            "ask.volume": result['ask']['volume'],
-            "bid.price": result['bid']['price'],
-            "bid.volume": result['bid']['volume'],
-            "price.average": result['bid']['price'] + (result['ask']['price'] - result['bid']['price'])/2
-        }
-        self.es.index(index="crypto-info", id=str(now.timestamp()) + exchange + pair, document=doc)
-        print(doc)
+        try:
+            now = datetime.datetime.now()
+            doc = {
+                "timestamp": datetime.datetime.utcnow(),
+                "updated": updated,
+                "exchange": exchange,
+                "type": "data",
+                "pair": pair,
+                "ask.price": result['ask']['price'],
+                "ask.volume": result['ask']['volume'],
+                "bid.price": result['bid']['price'],
+                "bid.volume": result['bid']['volume'],
+                "price.average": result['bid']['price'] + (result['ask']['price'] - result['bid']['price'])/2
+            }
+            self.es.index(index="crypto-info", id=str(now.timestamp()) + exchange + pair, document=doc)
+            print(doc)
+        except Exception as e:
+            print(e)
+
 
     def store_live_event(self, exchange):
         now = datetime.datetime.now()
