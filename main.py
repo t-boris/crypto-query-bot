@@ -1,5 +1,7 @@
 import datetime
 import asyncio
+import time
+
 import ccxt
 from elasticsearch import Elasticsearch
 
@@ -133,6 +135,7 @@ class CryptoPolling():
             self.es.index(index="crypto-info", id=str(now.timestamp()) + exchange + pair, document=doc)
             print(doc)
         except Exception as e:
+            time.sleep(2)
             print(e)
 
 
