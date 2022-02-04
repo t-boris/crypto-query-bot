@@ -5,14 +5,16 @@ import time
 import ccxt
 from elasticsearch import Elasticsearch
 
-COINS_OF_INTEREST = ['BTC', 'ETH', 'USDT', 'BNB', 'USDC', 'ADA', 'SOL', 'XRP', 'LUNA', 'DOT', 'DODGE', 'AVAX', 'BUSD', 'MATIC', 'SHIB', 'UST', 'BCH']
+COINS_OF_INTEREST = ['BTC', 'ETH', 'USDT', 'BNB', 'USDC', 'ADA', 'SOL', 'XRP', 'LUNA', 'DOT', 'DODGE', 'AVAX', 'BUSD',
+                     'MATIC', 'SHIB', 'UST', 'BCH']
+
 
 class CryptoPolling():
     def __init__(self, base: str, minimum: int):
         self.exchanges = []
         self.base = base
         self.minimum = minimum
-        self.es = Elasticsearch(http_auth=("cryptobot", "kukuriku99"))
+        self.es = Elasticsearch([{"host": "10.0.0.55"}], http_auth=("cryptobot", "kukuriku99"))
         self.exchanges.append({"exchange": ccxt.binanceus()})
         self.exchanges.append({"exchange": ccxt.coinbase()})
         self.exchanges.append({"exchange": ccxt.kraken()})
@@ -79,6 +81,7 @@ class CryptoPolling():
                             queue.append(pair)
                             continue
                         res = self.calculate_rate(pair, book)
+                        client.markets
                     except Exception:
                         queue.insert(0, pair)
                         await asyncio.sleep(5000)
@@ -92,7 +95,8 @@ class CryptoPolling():
                         await asyncio.sleep(5000)
                         continue
 
-                self.store_result(name, pair, res, now)
+                fee = self.calculate_fees(client, pair)
+                self.store_result(name, pair, res, fee, now)
                 exchange['updated'] = now
                 queue.append(pair)
                 await asyncio.sleep(client.rateLimit / 1000)
@@ -104,6 +108,11 @@ class CryptoPolling():
                 self.store_live_event(exchange['name'])
                 exchange['live_updated'] = now
             await asyncio.sleep(0.0001)
+
+    @staticmethod
+    def calculate_fees(client, pair):
+        market = client.markets[pair]
+        return market.get('taker')
 
     def run(self):
         loop = asyncio.get_event_loop()
@@ -117,7 +126,7 @@ class CryptoPolling():
             print("Closing Loop")
             loop.close()
 
-    def store_result(self, exchange, pair, result, updated):
+    def store_result(self, exchange, pair, result, fee, updated):
         try:
             now = datetime.datetime.now()
             doc = {
@@ -130,14 +139,13 @@ class CryptoPolling():
                 "ask.volume": result['ask']['volume'],
                 "bid.price": result['bid']['price'],
                 "bid.volume": result['bid']['volume'],
-                "price.average": result['bid']['price'] + (result['ask']['price'] - result['bid']['price'])/2
+                "fee.percent": fee
             }
             self.es.index(index="crypto-info", id=str(now.timestamp()) + exchange + pair, document=doc)
             print(doc)
         except Exception as e:
             time.sleep(2)
             print(e)
-
 
     def store_live_event(self, exchange):
         now = datetime.datetime.now()
@@ -175,7 +183,7 @@ class CryptoPolling():
                 break
             total[0]['volume'] += volume
             total[0]['price'] += volume * price
-            total[0]['baseVolume'] += (volume if right_order else 1/volume)
+            total[0]['baseVolume'] += (volume if right_order else 1 / volume)
         for ask in asks:
             price = ask[0]
             volume = ask[1]
@@ -186,7 +194,7 @@ class CryptoPolling():
             total[1]['baseVolume'] += (volume if right_order else 1 / volume)
         return {
             "bid": {
-                "price":  total[0]['price'] / total[0]['volume'],
+                "price": total[0]['price'] / total[0]['volume'],
                 "volume": total[0]['volume']
             },
             "ask": {
