@@ -31,6 +31,7 @@ class CryptoPolling():
         # self.exchanges.append({"exchange": ccxt.bitvavo()})
         self.exchanges.append({"exchange": ccxt.currencycom()})
         self.exchanges.append({"exchange": ccxt.ftx()})
+        self.exchanges.append({"exchange": ccxt.ftxus()})
         self.exchanges.append({"exchange": ccxt.idex()})
         self.exchanges.append({"exchange": ccxt.mexc()})
         self.exchanges.append({"exchange": ccxt.okex()})
