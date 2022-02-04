@@ -6,7 +6,7 @@ import ccxt
 from elasticsearch import Elasticsearch
 
 COINS_OF_INTEREST = ['BTC', 'ETH', 'USDT', 'BNB', 'USDC', 'ADA', 'SOL', 'XRP', 'LUNA', 'DOT', 'DODGE', 'AVAX', 'BUSD',
-                     'MATIC', 'SHIB', 'UST', 'BCH', 'RVN']
+                     'MATIC', 'SHIB', 'UST', 'BCH', 'RVN', 'USD']
 
 
 class CryptoPolling():
@@ -163,11 +163,11 @@ class CryptoPolling():
         return {
             "bid": {
                 "price": ticker['bid'],
-                "volume": -1
+                "volume": 100000
             },
             "ask": {
                 "price": ticker['ask'],
-                "volume": -1
+                "volume": 100000
             }
         }
 
