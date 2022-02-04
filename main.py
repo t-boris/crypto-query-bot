@@ -6,7 +6,7 @@ import ccxt
 from elasticsearch import Elasticsearch
 
 COINS_OF_INTEREST = ['BTC', 'ETH', 'USDT', 'BNB', 'USDC', 'ADA', 'SOL', 'XRP', 'LUNA', 'DOT', 'DODGE', 'AVAX', 'BUSD',
-                     'MATIC', 'SHIB', 'UST', 'BCH']
+                     'MATIC', 'SHIB', 'UST', 'BCH', 'RVN']
 
 
 class CryptoPolling():
