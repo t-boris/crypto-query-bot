@@ -96,7 +96,7 @@ class CryptoPolling():
                         continue
 
                 fee = self.calculate_fees(client, pair)
-                self.store_result(name, pair, res, fee, now)
+                self.store_result(exchange['exchange'].id, name, pair, res, fee, now)
                 exchange['updated'] = now
                 queue.append(pair)
                 await asyncio.sleep(client.rateLimit / 1000)
@@ -126,13 +126,14 @@ class CryptoPolling():
             print("Closing Loop")
             loop.close()
 
-    def store_result(self, exchange, pair, result, fee, updated):
+    def store_result(self, exchange_id, exchange_name, pair, result, fee, updated):
         try:
             now = datetime.datetime.now()
             doc = {
                 "timestamp": datetime.datetime.utcnow(),
                 "updated": updated,
-                "exchange": exchange,
+                "exchange.name": exchange_name,
+                "exchange.id": exchange_id,
                 "type": "data",
                 "pair": pair,
                 "ask.price": result['ask']['price'],
@@ -141,7 +142,7 @@ class CryptoPolling():
                 "bid.volume": result['bid']['volume'],
                 "fee.percent": fee
             }
-            self.es.index(index="crypto-info", id=str(now.timestamp()) + exchange + pair, document=doc)
+            self.es.index(index="crypto-info", id=str(now.timestamp()) + exchange_id + pair, document=doc)
             print(doc)
         except Exception as e:
             time.sleep(2)
