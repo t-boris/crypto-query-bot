@@ -82,7 +82,6 @@ class CryptoPolling():
                             queue.append(pair)
                             continue
                         res = self.calculate_rate(pair, book)
-                        client.markets
                     except Exception:
                         queue.insert(0, pair)
                         await asyncio.sleep(5000)
