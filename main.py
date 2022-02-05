@@ -10,7 +10,7 @@ COINS_OF_INTEREST = ['BTC', 'ETH', 'USDT', 'BNB', 'USDC', 'ADA', 'SOL', 'XRP', '
 
 
 class CryptoPolling():
-    def __init__(self, base: str, minimum: int):
+    def __init__(self, base: str, minimum: float):
         self.exchanges = []
         self.base = base
         self.minimum = minimum
@@ -113,7 +113,7 @@ class CryptoPolling():
     @staticmethod
     def calculate_fees(client, pair):
         market = client.markets[pair]
-        return market.get('taker')
+        return market['taker'] if 'taker' in market and isinstance(market['taker'], float) else 0
 
     def run(self):
         loop = asyncio.get_event_loop()
@@ -159,7 +159,8 @@ class CryptoPolling():
         self.es.index(index="crypto-health", id=str(now.timestamp()) + exchange + self.base, document=doc)
         print(doc)
 
-    def calculate_ticker(self, ticker):
+    @staticmethod
+    def calculate_ticker(ticker):
         return {
             "bid": {
                 "price": ticker['bid'],
@@ -172,35 +173,36 @@ class CryptoPolling():
         }
 
     def calculate_rate(self, pair, order_book):
-        [s1, _] = pair.split('/')
-        right_order = True if s1 == self.base else False
         bids = order_book['bids']
         asks = order_book['asks']
-        total = [{"volume": 0, "price": 0, "baseVolume": 0}, {"volume": 0, "price": 0, "baseVolume": 0}]
+
+        volume = 0
+        total_price = 0
         for bid in bids:
-            price = bid[0]
-            volume = bid[1]
-            if total[0]["baseVolume"] >= self.minimum:
+            volume += bid[1]
+            total_price += bid[0] * bid[1]
+            if volume > self.minimum:
                 break
-            total[0]['volume'] += volume
-            total[0]['price'] += volume * price
-            total[0]['baseVolume'] += (volume if right_order else 1 / volume)
+        bid_price = total_price / volume
+        bid_volume = volume
+        volume = 0
+        total_price = 0
         for ask in asks:
-            price = ask[0]
-            volume = ask[1]
-            if total[1]["baseVolume"] >= self.minimum:
+            volume += ask[1]
+            total_price += ask[0] * ask[1]
+            if volume > self.minimum:
                 break
-            total[1]['volume'] += volume
-            total[1]['price'] += volume * price
-            total[1]['baseVolume'] += (volume if right_order else 1 / volume)
+        ask_price = total_price / volume
+        ask_volume = volume
+
         return {
             "bid": {
-                "price": total[0]['price'] / total[0]['volume'],
-                "volume": total[0]['volume']
+                "price": bid_price,
+                "volume": bid_volume
             },
             "ask": {
-                "price": total[1]['price'] / total[1]['volume'],
-                "volume": total[1]['volume']
+                "price": ask_price,
+                "volume": ask_volume
             }
         }
 
