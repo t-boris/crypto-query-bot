@@ -108,6 +108,7 @@ class CryptoPolling():
                 self.store_live_event(exchange['name'])
                 exchange['live_updated'] = now
             await asyncio.sleep(0.0001)
+        print(f'Exchange: {exchange} loop is empty exiting...')
 
     @staticmethod
     def calculate_fees(client, pair):
